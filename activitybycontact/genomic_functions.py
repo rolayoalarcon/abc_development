@@ -4,15 +4,16 @@ from scipy import stats
 
 # This function calculates the activity of each enhancer by returning the
 # the geometric mean of H3K27 and DHS reads at a given enhancer region.
-def activity_of_element(row, chrom_name, start_name, end_name, bigwigs, stat_type='sum'):
-
-    bigwig_reads = [bw.stats(*row[[chrom_name, start_name, end_name]], type=stat_type)[0] for bw in bigwigs]
-    geom_mean = stats.gmean(bigwig_reads)
+def activity_of_element(row, activity_cols_1, activity_cols_2, activity_cols_3):
+    activity_cols = [activity_cols_1, activity_cols_2, activity_cols_3]
+    activity_reads = row[activity_cols].tolist()
+    geom_mean = stats.gmean(activity_reads)
     return geom_mean
+
 
 # This function uses liftover to convert the coordinates. We take into account
 # the name of the columns where the coordinates are.
-def coordinate_conversion(row, chrom_name, start_name, end_name, conversion_function, chromosome_relation):
+def coordinate_conversion(row, chrom_name, start_name, end_name, conversion_function):
 
     start_conversion = conversion_function(*row[[chrom_name, start_name]])
     end_conversion = conversion_function(*row[[chrom_name, end_name]])
@@ -27,20 +28,25 @@ def coordinate_conversion(row, chrom_name, start_name, end_name, conversion_func
     else:
         end_new = -1
 
-    if ch_new != -1:
-        ch_final = chromosome_relation.loc[ch_new].values[0]
-    else:
-        ch_final = -1
+    return (min(start_new, end_new), max(start_new, end_new))
 
-    return (ch_final, min(start_new, end_new), max(start_new, end_new))
 
-def format_bedstyle(dataframe, name_col, score_col):
+def chromosome_conversion(dataframe, chromosome_relation):
+    dataframe.set_index('chr', inplace=True)
+    dataframe_joined = dataframe.join(chromosome_relation)
 
-    dataframe_imp = dataframe[['chromosome_conv', 'start_conv', 'end_conv', name_col, score_col, 'strand']].copy()
+    return dataframe_joined['ensembl_chr'].values
+
+
+def format_bedstyle(dataframe, name_col, score_col, start_col, end_col):
+
+    dataframe_imp = dataframe[['chromosome_conv', start_col, end_col,
+                               name_col, score_col, 'strand']].copy()
+
     dataframe_imp.replace(-1, np.nan, inplace=True)
     dataframe_imp.dropna(inplace=True)
-    dataframe_imp['start_conv'] = dataframe_imp['start_conv'].astype(int)
-    dataframe_imp['end_conv'] = dataframe_imp['end_conv'].astype(int)
+    dataframe_imp[start_col] = dataframe_imp[start_col].astype(int)
+    dataframe_imp[end_col] = dataframe_imp[end_col].astype(int)
     return dataframe_imp
 
 
@@ -101,7 +107,7 @@ def promoter_coord(row, promoter_l, start_name):
 
 def close_element(gene_id, genomic_info, gamma_self, scale_self, min_self, rescaled_name, scale_mult):
     #print(gene_id)
-    gene_info = genomic_info[genomic_info['Ensembl gene id'] == gene_id].copy()
+    gene_info = genomic_info[genomic_info['gene_id'] == gene_id].copy()
 
     denominator = sum(gene_info['activity'].values * gene_info['corrected_contacts'].values)
     promoter_act = gene_info['promoter_activity'].values[0]
@@ -133,10 +139,10 @@ def selfBin_contact(bin_id, gamma_param, scale_param, min_dist, rescaled_info, b
 
 
 def abc_score(gene_id, genomic_info, correction_terms):
-    gene_info = genomic_info[genomic_info['Ensembl gene id'] == gene_id].copy()
+    gene_info = genomic_info[genomic_info['gene_id'] == gene_id].copy()
     activity = gene_info['activity'].values * gene_info['corrected_contacts'].values
 
-    abc_scores = activity/correction_terms[gene_info['Ensembl gene id'].values[0]]
+    abc_scores = activity/correction_terms[gene_info['gene_id'].values[0]]
 
     gene_info['ABC_score'] = abc_scores
     return gene_info
