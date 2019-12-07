@@ -4,8 +4,8 @@ from scipy import stats
 
 # This function calculates the activity of each enhancer by returning the
 # the geometric mean of H3K27 and DHS reads at a given enhancer region.
-def activity_of_element(row, activity_cols_1, activity_cols_2, activity_cols_3):
-    activity_cols = [activity_cols_1, activity_cols_2, activity_cols_3]
+def activity_of_element(row, activity_cols_1, activity_cols_2):
+    activity_cols = [activity_cols_1, activity_cols_2]
     activity_reads = row[activity_cols].tolist()
     geom_mean = stats.gmean(activity_reads)
     return geom_mean

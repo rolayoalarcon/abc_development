@@ -111,7 +111,7 @@ def enhancer_process(enhancer_info, filtered_bincoord, coordinate_liftover, chro
 
     '''
 
-    score_cols = ['CPM_atac_0', 'CPM_atac_1', 'CPM_h3k27ac_0']
+    score_cols = ['CPM_atac_0', 'CPM_h3k27ac_0']
     print('Processing enhancers...')
     enhancer_info['activity'] = enhancer_info.apply(activity_of_element, axis=1,
                                                     args=(score_cols),
