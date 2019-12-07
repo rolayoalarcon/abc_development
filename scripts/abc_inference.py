@@ -17,14 +17,14 @@ def main():
     parser.add_argument('--promoters', type=str, help='activity for promoter regions')
 
     parser.add_argument('--hic', type=str, help='Hi-C regularized counts', 
-                        default='../external_dataset/K562_filteredRegularized_contactCount.tsv')
+                        default='../data/external/K562_filteredRegularized_contactCount.tsv')
     parser.add_argument('--bincoord', type=str, help='Coordinates for bins',
-                        default='../external_dataset/K562_filteredBins.bed')
+                        default='../data/external/K562_filteredBins.bed')
     parser.add_argument('--chain', type=str, help='Chain file for coordinate liftover',
-                        default='../external_dataset/hg38ToHg19.over.chain')
+                        default='../data/external/hg38ToHg19.over.chain')
     
     parser.add_argument('--chromap', type=str, help='Chromosome mappping file',
-                        default='../external_dataset/GRCh37_UCSC2ensembl.txt')
+                        default='../data/external/GRCh37_UCSC2ensembl.txt')
     
     parser.add_argument('-p', type=int, help='Cores to use during processing', default=1)
     parser.add_argument('--scaler', type=int, help='Values to multiply for re-scaling', default=100)
